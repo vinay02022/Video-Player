@@ -14,6 +14,7 @@ A mobile-first video player application with a seamless user experience inspired
 ### Bonus
 
 - **Auto-Play Next:** 2-second countdown with circular animation and cancel option when a video ends. Plays the next video in the same category.
+- **PiP Support:** Browser Picture-in-Picture using the Document PiP API. Moves the video into a floating window that stays on top while multitasking. Supported in Chrome/Edge 116+.
 - **Skip Button Animations:** Ripple effect and floating "+10"/"-10" text feedback on skip interactions.
 
 ## Tech Stack
@@ -41,7 +42,7 @@ src/
     mini-player/    # MiniPlayer
     layout/         # AppShell, Header
   store/            # usePlayerStore, useVideoStore (Zustand)
-  hooks/            # useAutoPlayNext
+  hooks/            # useAutoPlayNext, useDocumentPiP
   data/             # Static video dataset
   lib/              # Utilities (formatTime, cn, constants)
   types/            # TypeScript interfaces
