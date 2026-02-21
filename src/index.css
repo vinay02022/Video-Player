@@ -19,3 +19,9 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
+
+/* Prevent interaction with YouTube's native Shorts UI.
+   All playback control goes through react-player API + our custom overlay. */
+.youtube-player-wrapper iframe {
+  pointer-events: none !important;
+}

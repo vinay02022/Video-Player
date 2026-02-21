@@ -27,12 +27,12 @@ export const CompactVideoCard = memo(function CompactVideoCard({
         isActive ? 'bg-white/10' : 'hover:bg-white/5 active:bg-white/10'
       }`}
     >
-      <div className="relative w-28 flex-shrink-0 aspect-video rounded-md overflow-hidden bg-surface-tertiary">
+      <div className="relative w-28 flex-shrink-0 aspect-[3/4] rounded-md overflow-hidden bg-surface-tertiary">
         <img
           src={video.thumbnailUrl}
           alt={video.title}
           loading="lazy"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
         {duration != null && (
           <span className="absolute bottom-1 right-1 bg-black/80 text-[10px] font-medium text-white px-1 py-0.5 rounded">

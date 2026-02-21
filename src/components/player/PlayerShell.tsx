@@ -8,7 +8,6 @@ import {
 } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '@/store/usePlayerStore';
-import { useDocumentPiP } from '@/hooks/useDocumentPiP';
 import { VideoPlayer } from './VideoPlayer';
 import { PlayerControls } from './PlayerControls';
 import { InPlayerVideoList } from './InPlayerVideoList';
@@ -17,7 +16,6 @@ import { DRAG_THRESHOLD, DRAG_VELOCITY_THRESHOLD } from '@/lib/constants';
 
 export function PlayerShell() {
   const navigate = useNavigate();
-  const pipContainerRef = useRef<HTMLDivElement>(null);
 
   const playerMode = usePlayerStore((s) => s.playerMode);
   const currentVideo = usePlayerStore((s) => s.currentVideo);
@@ -30,8 +28,6 @@ export function PlayerShell() {
   const restorePlayer = usePlayerStore((s) => s.restorePlayer);
   const closePlayer = usePlayerStore((s) => s.closePlayer);
   const togglePlay = usePlayerStore((s) => s.togglePlay);
-
-  const { isPiP, isSupported: isPiPSupported, togglePiP } = useDocumentPiP();
 
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const isFull = playerMode === 'full';
@@ -91,12 +87,6 @@ export function PlayerShell() {
     [closePlayer, navigate],
   );
 
-  const handlePiPToggle = useCallback(() => {
-    if (pipContainerRef.current) {
-      togglePiP(pipContainerRef.current);
-    }
-  }, [togglePiP]);
-
   if (!currentVideo) return null;
 
   return (
@@ -155,18 +145,17 @@ export function PlayerShell() {
               : 'w-[108px] h-[60px] flex-shrink-0 rounded-md overflow-hidden bg-surface-tertiary relative'
           }
         >
-          {/* Inner wrapper — only this element gets moved to PiP window */}
-          <div ref={pipContainerRef} className="w-full h-full">
+          <div className="w-full h-full">
             <VideoPlayer />
           </div>
 
           {/* Full mode: tap overlay */}
-          {isFull && !isPiP && (
+          {isFull && (
             <div className="absolute inset-0 z-10" onClick={handleTap} />
           )}
 
           {/* Full mode: buffering spinner */}
-          {isFull && isBuffering && !isPiP && (
+          {isFull && isBuffering && (
             <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
               <div className="w-10 h-10 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
             </div>
@@ -174,33 +163,13 @@ export function PlayerShell() {
 
           {/* Full mode: player controls */}
           <AnimatePresence>
-            {isFull && controlsVisible && !isPiP && (
-              <PlayerControls
-                onMinimize={handleMinimize}
-                onPiPToggle={isPiPSupported ? handlePiPToggle : undefined}
-                isPiP={isPiP}
-              />
+            {isFull && controlsVisible && (
+              <PlayerControls onMinimize={handleMinimize} />
             )}
           </AnimatePresence>
 
           {/* Full mode: auto-play countdown */}
-          {isFull && !isPiP && <AutoPlayCountdown />}
-
-          {/* Full mode: PiP placeholder */}
-          {isFull && isPiP && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-secondary gap-3">
-              <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 fill-current">
-                <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
-              </svg>
-              <p className="text-sm text-gray-400">Playing in Picture-in-Picture</p>
-              <button
-                onClick={handlePiPToggle}
-                className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-sm font-medium rounded-full transition-colors"
-              >
-                Exit PiP
-              </button>
-            </div>
-          )}
+          {isFull && <AutoPlayCountdown />}
 
           {/* Mini mode: transparent overlay to capture taps */}
           {!isFull && <div className="absolute inset-0 z-10" />}

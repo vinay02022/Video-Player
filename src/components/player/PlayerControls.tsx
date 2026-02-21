@@ -8,11 +8,9 @@ import { CONTROLS_HIDE_DELAY } from '@/lib/constants';
 
 interface PlayerControlsProps {
   onMinimize?: () => void;
-  onPiPToggle?: () => void;
-  isPiP?: boolean;
 }
 
-export function PlayerControls({ onMinimize, onPiPToggle, isPiP }: PlayerControlsProps) {
+export function PlayerControls({ onMinimize }: PlayerControlsProps) {
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const played = usePlayerStore((s) => s.played);
   const loaded = usePlayerStore((s) => s.loaded);
@@ -64,62 +62,48 @@ export function PlayerControls({ onMinimize, onPiPToggle, isPiP }: PlayerControl
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-20 flex flex-col justify-between bg-gradient-to-b from-black/40 via-transparent to-black/60"
+      className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-b from-black/40 via-transparent to-black/60"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Top bar with minimize + PiP buttons */}
-      <div className="flex items-center justify-between px-3 pt-2">
-        <div>
-          {onMinimize && (
-            <button
-              onClick={onMinimize}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
-              aria-label="Minimize player"
-            >
-              <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
-                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
-              </svg>
-            </button>
-          )}
-        </div>
-        <div>
-          {onPiPToggle && (
-            <button
-              onClick={onPiPToggle}
-              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
-              aria-label={isPiP ? 'Exit Picture-in-Picture' : 'Picture-in-Picture'}
-            >
-              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-current">
-                <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
-              </svg>
-            </button>
-          )}
-        </div>
+      {/* Top bar with minimize button — positioned absolute at top */}
+      <div className="absolute top-0 left-0 right-0 flex items-center px-3 pt-2">
+        {onMinimize && (
+          <button
+            onClick={onMinimize}
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Minimize player"
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+            </svg>
+          </button>
+        )}
       </div>
 
-      {/* Center controls */}
-      <div className="flex items-center justify-center gap-12">
-        <SkipButton direction="backward" />
-
-        <button
-          onClick={togglePlay}
-          className="flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
-          aria-label={isPlaying ? 'Pause' : 'Play'}
-        >
-          <svg viewBox="0 0 24 24" className="w-10 h-10 text-white fill-current">
-            {isPlaying ? (
-              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-            ) : (
-              <path d="M8 5v14l11-7z" />
-            )}
-          </svg>
-        </button>
-
-        <SkipButton direction="forward" />
-      </div>
-
-      {/* Bottom bar: progress + time */}
+      {/* Bottom section: playback controls + progress bar */}
       <div className="px-4 pb-3">
+        {/* Play/pause + skip controls */}
+        <div className="flex items-center justify-center gap-8 mb-4">
+          <SkipButton direction="backward" />
+
+          <button
+            onClick={togglePlay}
+            className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-current">
+              {isPlaying ? (
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              ) : (
+                <path d="M8 5v14l11-7z" />
+              )}
+            </svg>
+          </button>
+
+          <SkipButton direction="forward" />
+        </div>
+
+        {/* Progress bar */}
         <ProgressBar
           played={played}
           loaded={loaded}

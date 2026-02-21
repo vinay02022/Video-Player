@@ -12,6 +12,7 @@ interface ProgressState {
 
 export function VideoPlayer() {
   const playerRef = useRef<ReactPlayer>(null);
+  const readyRef = useRef(false);
 
   const currentVideo = usePlayerStore((s) => s.currentVideo);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -31,6 +32,24 @@ export function VideoPlayer() {
       clearSeekTarget();
     }
   }, [seekTarget, clearSeekTarget]);
+
+  // Directly control YouTube player when isPlaying changes.
+  // The `playing` prop alone doesn't work reliably for YouTube Shorts,
+  // so we call the internal YouTube IFrame API directly.
+  useEffect(() => {
+    if (!readyRef.current || !playerRef.current) return;
+    try {
+      const internal = playerRef.current.getInternalPlayer();
+      if (!internal) return;
+      if (isPlaying) {
+        internal.playVideo?.();
+      } else {
+        internal.pauseVideo?.();
+      }
+    } catch {
+      // Ignore — react-player will attempt via prop as fallback
+    }
+  }, [isPlaying]);
 
   const handleProgress = useCallback(
     (state: ProgressState) => {
@@ -54,10 +73,23 @@ export function VideoPlayer() {
     startAutoPlayCountdown();
   }, [setPlaying, startAutoPlayCountdown]);
 
+  const handleReady = useCallback(() => {
+    readyRef.current = true;
+    // Force play on initial load
+    if (isPlaying && playerRef.current) {
+      try {
+        const internal = playerRef.current.getInternalPlayer();
+        internal?.playVideo?.();
+      } catch {
+        // Silently ignore
+      }
+    }
+  }, [isPlaying]);
+
   if (!currentVideo) return null;
 
   return (
-    <div className="w-full h-full">
+    <div className="youtube-player-wrapper w-full h-full">
       <ReactPlayer
         ref={playerRef}
         url={currentVideo.mediaUrl}
@@ -69,6 +101,7 @@ export function VideoPlayer() {
         progressInterval={PROGRESS_INTERVAL}
         config={{
           playerVars: {
+            autoplay: 1,
             modestbranding: 1,
             rel: 0,
             iv_load_policy: 3,
@@ -76,8 +109,11 @@ export function VideoPlayer() {
             fs: 0,
             playsinline: 1,
             cc_load_policy: 0,
+            showinfo: 0,
+            origin: typeof window !== 'undefined' ? window.location.origin : '',
           },
         }}
+        onReady={handleReady}
         onProgress={handleProgress}
         onDuration={handleDuration}
         onPlay={() => setPlaying(true)}
