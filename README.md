@@ -2,6 +2,8 @@
 
 A mobile-first video player application with a seamless user experience inspired by the YouTube mobile app. Built with smooth playback, gesture-based interactions, clean UI, and high performance.
 
+**Live Demo:** [video-player-app-zeta.vercel.app](https://video-player-app-zeta.vercel.app)
+
 ## Features
 
 ### Core
