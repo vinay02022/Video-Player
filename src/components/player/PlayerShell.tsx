@@ -23,19 +23,24 @@ export function PlayerShell() {
   const currentVideo = usePlayerStore((s) => s.currentVideo);
   const controlsVisible = usePlayerStore((s) => s.controlsVisible);
   const isBuffering = usePlayerStore((s) => s.isBuffering);
-  const setControlsVisible = usePlayerStore((s) => s.setControlsVisible);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const played = usePlayerStore((s) => s.played);
+  const setControlsVisible = usePlayerStore((s) => s.setControlsVisible);
   const minimizePlayer = usePlayerStore((s) => s.minimizePlayer);
+  const restorePlayer = usePlayerStore((s) => s.restorePlayer);
+  const closePlayer = usePlayerStore((s) => s.closePlayer);
+  const togglePlay = usePlayerStore((s) => s.togglePlay);
 
   const { isPiP, isSupported: isPiPSupported, togglePiP } = useDocumentPiP();
 
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const isFull = playerMode === 'full';
 
   // Drag-to-minimize motion values
   const dragY = useMotionValue(0);
-  const scale = useTransform(dragY, [0, 300], [1, 0.85]);
-  const borderRadius = useTransform(dragY, [0, 300], [0, 16]);
-  const bgOpacity = useTransform(dragY, [0, 400], [1, 0.6]);
+  const dragScale = useTransform(dragY, [0, 300], [1, 0.85]);
+  const dragBorderRadius = useTransform(dragY, [0, 300], [0, 16]);
+  const dragOpacity = useTransform(dragY, [0, 400], [1, 0.6]);
 
   const handleTap = useCallback(() => {
     const nextVisible = !controlsVisible;
@@ -43,18 +48,13 @@ export function PlayerShell() {
 
     if (controlsTimerRef.current) clearTimeout(controlsTimerRef.current);
     if (nextVisible && isPlaying) {
-      controlsTimerRef.current = setTimeout(() => {
-        setControlsVisible(false);
-      }, 3000);
+      controlsTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
     }
   }, [controlsVisible, setControlsVisible, isPlaying]);
 
   const handleDragEnd = useCallback(
     (_: unknown, info: PanInfo) => {
-      const shouldMinimize =
-        info.offset.y > DRAG_THRESHOLD || info.velocity.y > DRAG_VELOCITY_THRESHOLD;
-
-      if (shouldMinimize) {
+      if (info.offset.y > DRAG_THRESHOLD || info.velocity.y > DRAG_VELOCITY_THRESHOLD) {
         minimizePlayer();
         navigate('/');
       }
@@ -67,88 +67,187 @@ export function PlayerShell() {
     navigate('/');
   }, [minimizePlayer, navigate]);
 
+  const handleRestore = useCallback(() => {
+    if (currentVideo) {
+      restorePlayer();
+      navigate(`/watch/${currentVideo.slug}`);
+    }
+  }, [currentVideo, restorePlayer, navigate]);
+
+  const handleTogglePlay = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      togglePlay();
+    },
+    [togglePlay],
+  );
+
+  const handleClose = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      closePlayer();
+      navigate('/');
+    },
+    [closePlayer, navigate],
+  );
+
   const handlePiPToggle = useCallback(() => {
     if (videoContainerRef.current) {
       togglePiP(videoContainerRef.current);
     }
   }, [togglePiP]);
 
-  if (playerMode !== 'full' || !currentVideo) return null;
+  if (!currentVideo) return null;
 
   return (
     <motion.div
-      className="fixed inset-0 z-40 bg-black flex flex-col overflow-hidden"
-      style={{ y: dragY, scale, borderRadius, opacity: bgOpacity }}
-      drag="y"
-      dragConstraints={{ top: 0, bottom: 0 }}
-      dragElastic={{ top: 0, bottom: 0.5 }}
-      onDragEnd={handleDragEnd}
+      className={
+        isFull
+          ? 'fixed inset-0 z-40 bg-black flex flex-col overflow-hidden'
+          : 'fixed bottom-0 left-0 right-0 z-50 bg-surface-secondary border-t border-white/10 safe-area-bottom'
+      }
+      drag={isFull ? 'y' : false}
+      dragConstraints={isFull ? { top: 0, bottom: 0 } : undefined}
+      dragElastic={isFull ? { top: 0, bottom: 0.5 } : undefined}
+      onDragEnd={isFull ? handleDragEnd : undefined}
+      style={
+        isFull
+          ? { y: dragY, scale: dragScale, borderRadius: dragBorderRadius, opacity: dragOpacity }
+          : undefined
+      }
       initial={{ y: '100%' }}
       animate={{ y: 0 }}
-      exit={{ y: '100%' }}
+      exit={{ y: '100%', opacity: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      onClick={!isFull ? handleRestore : undefined}
     >
-      {/* Drag handle */}
-      <div className="flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing">
-        <div className="w-10 h-1 rounded-full bg-gray-500/50" />
-      </div>
-
-      {/* Video area */}
-      <div className="relative w-full aspect-video bg-black flex-shrink-0">
-        {/* Video container (this element gets moved to PiP window) */}
-        <div ref={videoContainerRef} className="w-full h-full">
-          <VideoPlayer />
-        </div>
-
-        {/* Transparent overlay to capture taps */}
-        {!isPiP && <div className="absolute inset-0 z-10" onClick={handleTap} />}
-
-        {/* Buffering indicator */}
-        {isBuffering && !isPiP && (
-          <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
-            <div className="w-10 h-10 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
-          </div>
-        )}
-
-        {/* Controls overlay */}
-        <AnimatePresence>
-          {controlsVisible && !isPiP && (
-            <PlayerControls
-              onMinimize={handleMinimize}
-              onPiPToggle={isPiPSupported ? handlePiPToggle : undefined}
-              isPiP={isPiP}
+      {/* Top section: drag handle (full) or progress bar (mini) */}
+      <div
+        className={
+          isFull ? 'flex justify-center pt-2 pb-1 cursor-grab active:cursor-grabbing' : ''
+        }
+      >
+        {isFull ? (
+          <div className="w-10 h-1 rounded-full bg-gray-500/50" />
+        ) : (
+          <div className="h-[2px] w-full bg-white/10">
+            <div
+              className="h-full bg-accent-red origin-left transition-transform duration-200"
+              style={{ transform: `scaleX(${played})`, width: '100%' }}
             />
-          )}
-        </AnimatePresence>
-
-        {/* Auto-play countdown overlay */}
-        {!isPiP && <AutoPlayCountdown />}
-
-        {/* PiP active placeholder */}
-        {isPiP && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-secondary gap-3">
-            <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 fill-current">
-              <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
-            </svg>
-            <p className="text-sm text-gray-400">Playing in Picture-in-Picture</p>
-            <button
-              onClick={handlePiPToggle}
-              className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-sm font-medium rounded-full transition-colors"
-            >
-              Exit PiP
-            </button>
           </div>
         )}
       </div>
 
-      {/* Content area below video */}
-      <div className="relative flex-1 overflow-hidden bg-surface-primary">
-        <div className="px-4 py-4">
-          <h2 className="text-base font-semibold text-white leading-snug">
-            {currentVideo.title}
-          </h2>
+      {/* Main content area */}
+      <div
+        className={
+          isFull
+            ? 'flex flex-col flex-1 min-h-0'
+            : 'flex items-center h-16 px-3 gap-3'
+        }
+      >
+        {/* Video container — always at this exact tree position to prevent unmount */}
+        <div
+          ref={videoContainerRef}
+          className={
+            isFull
+              ? 'relative w-full aspect-video bg-black flex-shrink-0'
+              : 'w-[108px] h-[60px] flex-shrink-0 rounded-md overflow-hidden bg-surface-tertiary relative'
+          }
+        >
+          <VideoPlayer />
+
+          {/* Full mode: tap overlay */}
+          {isFull && !isPiP && (
+            <div className="absolute inset-0 z-10" onClick={handleTap} />
+          )}
+
+          {/* Full mode: buffering spinner */}
+          {isFull && isBuffering && !isPiP && (
+            <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
+              <div className="w-10 h-10 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
+            </div>
+          )}
+
+          {/* Full mode: player controls */}
+          <AnimatePresence>
+            {isFull && controlsVisible && !isPiP && (
+              <PlayerControls
+                onMinimize={handleMinimize}
+                onPiPToggle={isPiPSupported ? handlePiPToggle : undefined}
+                isPiP={isPiP}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Full mode: auto-play countdown */}
+          {isFull && !isPiP && <AutoPlayCountdown />}
+
+          {/* Full mode: PiP placeholder */}
+          {isFull && isPiP && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-surface-secondary gap-3">
+              <svg viewBox="0 0 24 24" className="w-10 h-10 text-gray-400 fill-current">
+                <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
+              </svg>
+              <p className="text-sm text-gray-400">Playing in Picture-in-Picture</p>
+              <button
+                onClick={handlePiPToggle}
+                className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white text-sm font-medium rounded-full transition-colors"
+              >
+                Exit PiP
+              </button>
+            </div>
+          )}
+
+          {/* Mini mode: transparent overlay to capture taps */}
+          {!isFull && <div className="absolute inset-0 z-10" />}
         </div>
-        <InPlayerVideoList />
+
+        {/* Mini mode: title + controls */}
+        {!isFull && (
+          <>
+            <p className="flex-1 text-sm text-white truncate font-medium">
+              {currentVideo.title}
+            </p>
+
+            <button
+              onClick={handleTogglePlay}
+              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
+              aria-label={isPlaying ? 'Pause' : 'Play'}
+            >
+              <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
+                {isPlaying ? (
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                ) : (
+                  <path d="M8 5v14l11-7z" />
+                )}
+              </svg>
+            </button>
+
+            <button
+              onClick={handleClose}
+              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
+              aria-label="Close player"
+            >
+              <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-current">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+              </svg>
+            </button>
+          </>
+        )}
+
+        {/* Full mode: content area below video */}
+        {isFull && (
+          <div className="relative flex-1 overflow-hidden bg-surface-primary">
+            <div className="px-4 py-4">
+              <h2 className="text-base font-semibold text-white leading-snug">
+                {currentVideo.title}
+              </h2>
+            </div>
+            <InPlayerVideoList />
+          </div>
+        )}
       </div>
     </motion.div>
   );
