@@ -30,7 +30,7 @@ export const VideoCard = memo(function VideoCard({
       onClick={handleClick}
       className="group w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-red rounded-xl"
     >
-      <div className="relative aspect-[4/5] bg-surface-tertiary rounded-xl overflow-hidden">
+      <div className="relative aspect-video bg-surface-tertiary rounded-xl overflow-hidden">
         <img
           src={video.thumbnailUrl}
           alt={video.title}
@@ -40,18 +40,18 @@ export const VideoCard = memo(function VideoCard({
         />
 
         {duration != null && (
-          <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-medium px-1.5 py-0.5 rounded">
+          <span className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-medium px-2 py-1 rounded-md">
             {formatTime(duration)}
           </span>
         )}
 
-        <span className="absolute top-2 left-2 bg-white/15 backdrop-blur-md text-white text-[10px] font-medium uppercase tracking-wide px-2 py-0.5 rounded-full">
+        <span className="absolute top-2.5 left-2.5 bg-white/15 backdrop-blur-md text-white text-[11px] font-medium uppercase tracking-wide px-2.5 py-1 rounded-full">
           {categoryName}
         </span>
       </div>
 
-      <div className="mt-2.5 px-0.5">
-        <h3 className="text-[13px] font-medium text-white leading-snug line-clamp-2 group-hover:text-white/90">
+      <div className="mt-3 px-0.5">
+        <h3 className="text-sm font-semibold text-white leading-snug line-clamp-2 group-hover:text-white/90">
           {video.title}
         </h3>
       </div>

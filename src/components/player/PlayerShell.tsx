@@ -132,7 +132,7 @@ export function PlayerShell() {
   const outerClass = isFull
     ? 'fixed inset-0 z-40 bg-black flex flex-col overflow-hidden'
     : isPip
-      ? 'fixed bottom-6 right-6 z-50 w-[560px] max-w-[92vw] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/15'
+      ? 'fixed bottom-6 right-6 z-50 w-[640px] max-w-[92vw] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/15'
       : 'fixed bottom-0 left-0 right-0 z-50 bg-surface-secondary border-t border-white/10 safe-area-bottom';
 
   return (
@@ -224,13 +224,13 @@ export function PlayerShell() {
           {isFull && (
             <button
               onClick={(e) => { e.stopPropagation(); handleEnterPiP(); }}
-              className="absolute top-3 right-3 z-[25] flex items-center gap-2.5 px-5 py-3 rounded-xl bg-black/80 hover:bg-black/95 transition-colors border-2 border-white/30 shadow-lg"
+              className="absolute top-3 right-3 z-[25] flex items-center gap-3 px-6 py-3.5 rounded-2xl bg-black/80 hover:bg-black/95 active:scale-95 transition-all border-2 border-white/40 shadow-xl shadow-black/50"
               aria-label="Picture-in-Picture"
             >
-              <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-current">
+              <svg viewBox="0 0 24 24" className="w-10 h-10 text-white fill-current">
                 <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
               </svg>
-              <span className="text-white text-base font-extrabold tracking-wide">PiP</span>
+              <span className="text-white text-lg font-extrabold tracking-wide">PiP</span>
             </button>
           )}
 

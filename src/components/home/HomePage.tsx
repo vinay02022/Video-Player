@@ -13,7 +13,7 @@ export function HomePage() {
       style={{ paddingBottom: playerMode === 'mini' ? 72 : 0 }}
     >
       <Header />
-      <main className="pt-6 pb-8">
+      <main className="pt-8 pb-10">
         {categories.map((cat) => (
           <CategorySection
             key={cat.category.slug}
