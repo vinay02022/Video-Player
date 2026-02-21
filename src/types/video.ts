@@ -21,4 +21,4 @@ export interface VideoDataset {
   categories: CategoryWithVideos[];
 }
 
-export type PlayerMode = 'idle' | 'full' | 'mini';
+export type PlayerMode = 'idle' | 'full' | 'mini' | 'pip';

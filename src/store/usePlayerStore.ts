@@ -35,6 +35,7 @@ interface PlayerState {
   setIsSeeking: (seeking: boolean) => void;
   setIsBuffering: (buffering: boolean) => void;
   minimizePlayer: () => void;
+  enterPiP: () => void;
   restorePlayer: () => void;
   closePlayer: () => void;
   setControlsVisible: (visible: boolean) => void;
@@ -106,6 +107,7 @@ export const usePlayerStore = create<PlayerState>((set, get) => ({
   setIsBuffering: (buffering) => set({ isBuffering: buffering }),
 
   minimizePlayer: () => set({ playerMode: 'mini', videoListExpanded: false }),
+  enterPiP: () => set({ playerMode: 'pip', videoListExpanded: false }),
   restorePlayer: () => set({ playerMode: 'full' }),
 
   closePlayer: () =>

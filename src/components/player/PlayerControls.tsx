@@ -1,10 +1,9 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { usePlayerStore } from '@/store/usePlayerStore';
 import { ProgressBar } from './ProgressBar';
 import { SkipButton } from './SkipButton';
 import { formatTime } from '@/lib/formatTime';
-import { CONTROLS_HIDE_DELAY } from '@/lib/constants';
 
 interface PlayerControlsProps {
   onMinimize?: () => void;
@@ -19,25 +18,6 @@ export function PlayerControls({ onMinimize }: PlayerControlsProps) {
   const togglePlay = usePlayerStore((s) => s.togglePlay);
   const seekTo = usePlayerStore((s) => s.seekTo);
   const setIsSeeking = usePlayerStore((s) => s.setIsSeeking);
-  const setControlsVisible = usePlayerStore((s) => s.setControlsVisible);
-
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout>>();
-
-  const resetHideTimer = useCallback(() => {
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    if (isPlaying) {
-      hideTimerRef.current = setTimeout(() => {
-        setControlsVisible(false);
-      }, CONTROLS_HIDE_DELAY);
-    }
-  }, [isPlaying, setControlsVisible]);
-
-  useEffect(() => {
-    resetHideTimer();
-    return () => {
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    };
-  }, [resetHideTimer]);
 
   const handleSeek = useCallback(
     (fraction: number) => {
@@ -48,13 +28,11 @@ export function PlayerControls({ onMinimize }: PlayerControlsProps) {
 
   const handleSeekStart = useCallback(() => {
     setIsSeeking(true);
-    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
   }, [setIsSeeking]);
 
   const handleSeekEnd = useCallback(() => {
     setIsSeeking(false);
-    resetHideTimer();
-  }, [setIsSeeking, resetHideTimer]);
+  }, [setIsSeeking]);
 
   return (
     <motion.div
@@ -62,11 +40,11 @@ export function PlayerControls({ onMinimize }: PlayerControlsProps) {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
-      className="absolute inset-0 z-20 flex flex-col justify-end bg-gradient-to-b from-black/40 via-transparent to-black/60"
+      className="absolute inset-0 z-20 flex flex-col bg-gradient-to-b from-black/40 via-transparent to-black/60"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Top bar with minimize button — positioned absolute at top */}
-      <div className="absolute top-0 left-0 right-0 flex items-center px-3 pt-2">
+      {/* Top bar with minimize button */}
+      <div className="flex items-center px-3 pt-2">
         {onMinimize && (
           <button
             onClick={onMinimize}
@@ -80,30 +58,35 @@ export function PlayerControls({ onMinimize }: PlayerControlsProps) {
         )}
       </div>
 
-      {/* Bottom section: playback controls + progress bar */}
+      {/* Spacer pushes controls to ~60% down */}
+      <div className="flex-[3]" />
+
+      {/* Play/pause + skip controls — between center and bottom */}
+      <div className="flex items-center justify-center gap-10">
+        <SkipButton direction="backward" />
+
+        <button
+          onClick={togglePlay}
+          className="flex items-center justify-center w-24 h-24 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+          aria-label={isPlaying ? 'Pause' : 'Play'}
+        >
+          <svg viewBox="0 0 24 24" className="w-12 h-12 text-white fill-current">
+            {isPlaying ? (
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+            ) : (
+              <path d="M8 5v14l11-7z" />
+            )}
+          </svg>
+        </button>
+
+        <SkipButton direction="forward" />
+      </div>
+
+      {/* Spacer between controls and progress */}
+      <div className="flex-[2]" />
+
+      {/* Progress bar at bottom */}
       <div className="px-4 pb-3">
-        {/* Play/pause + skip controls */}
-        <div className="flex items-center justify-center gap-8 mb-4">
-          <SkipButton direction="backward" />
-
-          <button
-            onClick={togglePlay}
-            className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
-            aria-label={isPlaying ? 'Pause' : 'Play'}
-          >
-            <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-current">
-              {isPlaying ? (
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              ) : (
-                <path d="M8 5v14l11-7z" />
-              )}
-            </svg>
-          </button>
-
-          <SkipButton direction="forward" />
-        </div>
-
-        {/* Progress bar */}
         <ProgressBar
           played={played}
           loaded={loaded}
