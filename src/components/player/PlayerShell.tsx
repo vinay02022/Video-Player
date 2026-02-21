@@ -8,7 +8,6 @@ import {
 } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlayerStore } from '@/store/usePlayerStore';
-import { useDocumentPiP } from '@/hooks/useDocumentPiP';
 import { VideoPlayer } from './VideoPlayer';
 import { PlayerControls } from './PlayerControls';
 import { InPlayerVideoList } from './InPlayerVideoList';
@@ -21,15 +20,12 @@ export function PlayerShell() {
   const isHoveringRef = useRef(false);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const { isSupported: isPiPSupported, openPiP } = useDocumentPiP();
-
   const playerMode = usePlayerStore((s) => s.playerMode);
   const currentVideo = usePlayerStore((s) => s.currentVideo);
   const controlsVisible = usePlayerStore((s) => s.controlsVisible);
   const isBuffering = usePlayerStore((s) => s.isBuffering);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const played = usePlayerStore((s) => s.played);
-  const playedSeconds = usePlayerStore((s) => s.playedSeconds);
   const isSeeking = usePlayerStore((s) => s.isSeeking);
   const setControlsVisible = usePlayerStore((s) => s.setControlsVisible);
   const minimizePlayer = usePlayerStore((s) => s.minimizePlayer);
@@ -101,20 +97,10 @@ export function PlayerShell() {
     navigate('/');
   }, [minimizePlayer, navigate]);
 
-  const handleEnterPiP = useCallback(async () => {
-    if (isPiPSupported && currentVideo) {
-      const success = await openPiP(currentVideo.slug, playedSeconds);
-      if (success) {
-        // Document PiP opened — minimize to mini-player in the main tab
-        minimizePlayer();
-        navigate('/');
-        return;
-      }
-    }
-    // Fallback: in-app PiP
+  const handleEnterPiP = useCallback(() => {
     enterPiP();
     navigate('/');
-  }, [isPiPSupported, currentVideo, playedSeconds, openPiP, minimizePlayer, enterPiP, navigate]);
+  }, [enterPiP, navigate]);
 
   const handleRestore = useCallback(() => {
     if (currentVideo) {
@@ -238,13 +224,13 @@ export function PlayerShell() {
           {isFull && (
             <button
               onClick={(e) => { e.stopPropagation(); handleEnterPiP(); }}
-              className="absolute top-3 right-3 z-[25] flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black/70 hover:bg-black/90 transition-colors border border-white/20"
+              className="absolute top-3 right-3 z-[25] flex items-center gap-2.5 px-5 py-3 rounded-xl bg-black/80 hover:bg-black/95 transition-colors border-2 border-white/30 shadow-lg"
               aria-label="Picture-in-Picture"
             >
-              <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current">
+              <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-current">
                 <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
               </svg>
-              <span className="text-white text-sm font-bold">PiP</span>
+              <span className="text-white text-base font-extrabold tracking-wide">PiP</span>
             </button>
           )}
 
