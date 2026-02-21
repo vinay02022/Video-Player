@@ -132,7 +132,7 @@ export function PlayerShell() {
   const outerClass = isFull
     ? 'fixed inset-0 z-40 bg-black flex flex-col overflow-hidden'
     : isPip
-      ? 'fixed bottom-6 right-6 z-50 w-[640px] max-w-[92vw] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/15'
+      ? 'fixed bottom-4 right-4 z-50 w-[400px] max-w-[90vw] rounded-xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10'
       : 'fixed bottom-0 left-0 right-0 z-50 bg-surface-secondary border-t border-white/10 safe-area-bottom';
 
   return (
@@ -240,36 +240,36 @@ export function PlayerShell() {
           {/* PiP mode: overlay controls */}
           {isPip && (
             <>
-              {/* Expand button — top left */}
-              <button
-                onClick={(e) => { e.stopPropagation(); handleRestore(); }}
-                className="absolute top-2 left-2 z-20 flex items-center justify-center w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
-                aria-label="Expand"
-              >
-                <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
-                  <path d="M21 11V3h-8l3.29 3.29-10 10L3 13v8h8l-3.29-3.29 10-10z" />
-                </svg>
-              </button>
+              {/* Top bar: expand + close */}
+              <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between px-2 pt-2">
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleRestore(); }}
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                  aria-label="Expand"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-white fill-current">
+                    <path d="M21 11V3h-8l3.29 3.29-10 10L3 13v8h8l-3.29-3.29 10-10z" />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleClose}
+                  className="flex items-center justify-center w-8 h-8 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                  aria-label="Close"
+                >
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 text-white fill-current">
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  </svg>
+                </button>
+              </div>
 
-              {/* Close button — top right */}
-              <button
-                onClick={handleClose}
-                className="absolute top-2 right-2 z-20 flex items-center justify-center w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
-                aria-label="Close"
-              >
-                <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
-                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                </svg>
-              </button>
-
-              {/* Center play/pause — always visible */}
+              {/* Center play/pause */}
               <div className="absolute inset-0 z-10 flex items-center justify-center">
                 <button
                   onClick={handleTogglePlay}
-                  className="flex items-center justify-center w-16 h-16 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  className="flex items-center justify-center w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current">
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
                     {isPlaying ? (
                       <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                     ) : (
@@ -287,13 +287,13 @@ export function PlayerShell() {
 
         {/* PiP mode: title bar below video */}
         {isPip && (
-          <div className="flex items-center gap-3 px-4 py-3 bg-surface-secondary">
+          <div className="flex items-center gap-2.5 px-3 py-2.5 bg-surface-secondary">
             <img
               src={currentVideo.thumbnailUrl}
               alt=""
-              className="w-12 h-12 rounded-md object-cover object-top flex-shrink-0"
+              className="w-9 h-9 rounded object-cover object-top flex-shrink-0"
             />
-            <p className="flex-1 text-sm text-white font-semibold truncate">
+            <p className="flex-1 text-xs text-white font-semibold truncate">
               {currentVideo.title}
             </p>
           </div>
