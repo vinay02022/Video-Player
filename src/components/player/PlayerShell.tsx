@@ -8,6 +8,7 @@ import {
 } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '@/store/usePlayerStore';
+import { useDocumentPiP } from '@/hooks/useDocumentPiP';
 import { VideoPlayer } from './VideoPlayer';
 import { PlayerControls } from './PlayerControls';
 import { InPlayerVideoList } from './InPlayerVideoList';
@@ -19,12 +20,15 @@ export function PlayerShell() {
   const isHoveringRef = useRef(false);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
+  const { isSupported: isPiPSupported, openPiP } = useDocumentPiP();
+
   const playerMode = usePlayerStore((s) => s.playerMode);
   const currentVideo = usePlayerStore((s) => s.currentVideo);
   const controlsVisible = usePlayerStore((s) => s.controlsVisible);
   const isBuffering = usePlayerStore((s) => s.isBuffering);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const played = usePlayerStore((s) => s.played);
+  const playedSeconds = usePlayerStore((s) => s.playedSeconds);
   const isSeeking = usePlayerStore((s) => s.isSeeking);
   const setControlsVisible = usePlayerStore((s) => s.setControlsVisible);
   const minimizePlayer = usePlayerStore((s) => s.minimizePlayer);
@@ -89,10 +93,20 @@ export function PlayerShell() {
     navigate('/');
   }, [minimizePlayer, navigate]);
 
-  const handleEnterPiP = useCallback(() => {
+  const handleEnterPiP = useCallback(async () => {
+    if (isPiPSupported && currentVideo) {
+      const success = await openPiP(currentVideo.slug, playedSeconds);
+      if (success) {
+        // Document PiP opened — minimize to mini-player in the main tab
+        minimizePlayer();
+        navigate('/');
+        return;
+      }
+    }
+    // Fallback: in-app PiP
     enterPiP();
     navigate('/');
-  }, [enterPiP, navigate]);
+  }, [isPiPSupported, currentVideo, playedSeconds, openPiP, minimizePlayer, enterPiP, navigate]);
 
   const handleRestore = useCallback(() => {
     if (currentVideo) {
@@ -124,7 +138,7 @@ export function PlayerShell() {
   const outerClass = isFull
     ? 'fixed inset-0 z-40 bg-black flex flex-col overflow-hidden'
     : isPip
-      ? 'fixed bottom-24 right-4 z-50 w-[340px] rounded-xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10'
+      ? 'fixed bottom-24 right-4 z-50 w-[480px] max-w-[90vw] rounded-xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10'
       : 'fixed bottom-0 left-0 right-0 z-50 bg-surface-secondary border-t border-white/10 safe-area-bottom';
 
   return (
@@ -216,10 +230,10 @@ export function PlayerShell() {
           {isFull && (
             <button
               onClick={(e) => { e.stopPropagation(); handleEnterPiP(); }}
-              className="absolute top-3 right-3 z-[25] flex items-center justify-center w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+              className="absolute top-3 right-3 z-[25] flex items-center justify-center w-14 h-14 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
               aria-label="Picture-in-Picture"
             >
-              <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current">
+              <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current">
                 <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
               </svg>
             </button>
@@ -234,10 +248,10 @@ export function PlayerShell() {
               {/* Expand button — top left */}
               <button
                 onClick={(e) => { e.stopPropagation(); handleRestore(); }}
-                className="absolute top-2 left-2 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                className="absolute top-2 left-2 z-20 flex items-center justify-center w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
                 aria-label="Expand"
               >
-                <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-current">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
                   <path d="M21 11V3h-8l3.29 3.29-10 10L3 13v8h8l-3.29-3.29 10-10z" />
                 </svg>
               </button>
@@ -245,10 +259,10 @@ export function PlayerShell() {
               {/* Close button — top right */}
               <button
                 onClick={handleClose}
-                className="absolute top-2 right-2 z-20 flex items-center justify-center w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
+                className="absolute top-2 right-2 z-20 flex items-center justify-center w-11 h-11 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
                 aria-label="Close"
               >
-                <svg viewBox="0 0 24 24" className="w-5 h-5 text-white fill-current">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
                   <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
                 </svg>
               </button>
@@ -257,10 +271,10 @@ export function PlayerShell() {
               <div className="absolute inset-0 z-10 flex items-center justify-center">
                 <button
                   onClick={handleTogglePlay}
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+                  className="flex items-center justify-center w-16 h-16 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
                   aria-label={isPlaying ? 'Pause' : 'Play'}
                 >
-                  <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current">
+                  <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current">
                     {isPlaying ? (
                       <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
                     ) : (

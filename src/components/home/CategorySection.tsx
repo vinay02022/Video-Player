@@ -24,7 +24,7 @@ export const CategorySection = memo(function CategorySection({
         <span className="text-xs text-gray-400 ml-auto">{videos.length} videos</span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 px-4">
         {videos.map((video) => (
           <VideoCard
             key={video.slug}

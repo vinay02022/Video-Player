@@ -48,10 +48,10 @@ export function PlayerControls({ onMinimize }: PlayerControlsProps) {
         {onMinimize && (
           <button
             onClick={onMinimize}
-            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
+            className="flex items-center justify-center w-14 h-14 rounded-full hover:bg-white/10 transition-colors"
             aria-label="Minimize player"
           >
-            <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
+            <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current">
               <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
             </svg>
           </button>

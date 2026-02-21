@@ -12,116 +12,63 @@ declare global {
 }
 
 export function useDocumentPiP() {
-  const [isPiP, setIsPiP] = useState(false);
+  const [isWindowOpen, setIsWindowOpen] = useState(false);
   const pipWindowRef = useRef<Window | null>(null);
-  const originalParentRef = useRef<HTMLElement | null>(null);
-  const playerElementRef = useRef<HTMLElement | null>(null);
 
   const isSupported = typeof window !== 'undefined' && 'documentPictureInPicture' in window;
 
-  const enterPiP = useCallback(
-    async (playerContainer: HTMLElement) => {
-      if (!isSupported || !window.documentPictureInPicture) return;
-      if (isPiP) return;
+  // Opens a Document PiP window with a FRESH YouTube iframe.
+  // This avoids Error 153 (we don't move the existing iframe).
+  const openPiP = useCallback(
+    async (videoId: string, startSeconds: number) => {
+      if (!isSupported || !window.documentPictureInPicture) return false;
+      if (isWindowOpen) return false;
 
       try {
-        // Remember original parent so we can move the element back
-        originalParentRef.current = playerContainer.parentElement;
-        playerElementRef.current = playerContainer;
-
         const pipWindow = await window.documentPictureInPicture.requestWindow({
-          width: 480,
-          height: 270,
+          width: 640,
+          height: 360,
         });
 
         pipWindowRef.current = pipWindow;
 
-        // Copy all stylesheets to the PiP window
-        const allStyles = [...document.styleSheets];
-        for (const sheet of allStyles) {
-          try {
-            if (sheet.href) {
-              const link = pipWindow.document.createElement('link');
-              link.rel = 'stylesheet';
-              link.href = sheet.href;
-              pipWindow.document.head.appendChild(link);
-            } else if (sheet.cssRules) {
-              const style = pipWindow.document.createElement('style');
-              const rules = [...sheet.cssRules].map((r) => r.cssText).join('\n');
-              style.textContent = rules;
-              pipWindow.document.head.appendChild(style);
-            }
-          } catch {
-            // Skip inaccessible stylesheets (CORS)
-          }
-        }
-
-        // Add PiP-specific styles that force the video to fill the window
-        const pipStyle = pipWindow.document.createElement('style');
-        pipStyle.textContent = `
+        // Style the PiP window
+        const style = pipWindow.document.createElement('style');
+        style.textContent = `
           * { margin: 0; padding: 0; box-sizing: border-box; }
-          body {
-            background: #000;
-            overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-          }
-          .pip-container {
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-          }
-          .pip-container > * {
-            width: 100% !important;
-            height: 100% !important;
-          }
-          .pip-container div,
-          .pip-container iframe {
-            width: 100% !important;
-            height: 100% !important;
-          }
+          body { background: #000; overflow: hidden; width: 100vw; height: 100vh; }
+          iframe { width: 100vw; height: 100vh; border: none; }
         `;
-        pipWindow.document.head.appendChild(pipStyle);
+        pipWindow.document.head.appendChild(style);
 
-        // Create wrapper and MOVE (not clone) the player element
-        const wrapper = pipWindow.document.createElement('div');
-        wrapper.className = 'pip-container';
-        pipWindow.document.body.appendChild(wrapper);
-        wrapper.appendChild(playerContainer);
+        // Create a new YouTube embed iframe at the current time
+        const iframe = pipWindow.document.createElement('iframe');
+        const start = Math.floor(startSeconds);
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&start=${start}&controls=1&modestbranding=1&rel=0&playsinline=1`;
+        iframe.allow = 'autoplay; encrypted-media';
+        pipWindow.document.body.appendChild(iframe);
 
-        setIsPiP(true);
+        setIsWindowOpen(true);
 
-        // When PiP window closes, move element back
         pipWindow.addEventListener('pagehide', () => {
-          if (originalParentRef.current && playerElementRef.current) {
-            originalParentRef.current.prepend(playerElementRef.current);
-          }
           pipWindowRef.current = null;
-          setIsPiP(false);
+          setIsWindowOpen(false);
         });
+
+        return true;
       } catch (err) {
-        console.error('Failed to enter PiP:', err);
+        console.error('Failed to open PiP:', err);
+        return false;
       }
     },
-    [isSupported, isPiP],
+    [isSupported, isWindowOpen],
   );
 
-  const exitPiP = useCallback(() => {
+  const closePiP = useCallback(() => {
     if (pipWindowRef.current) {
       pipWindowRef.current.close();
     }
   }, []);
-
-  const togglePiP = useCallback(
-    (playerContainer: HTMLElement) => {
-      if (isPiP) {
-        exitPiP();
-      } else {
-        enterPiP(playerContainer);
-      }
-    },
-    [isPiP, enterPiP, exitPiP],
-  );
 
   // Clean up on unmount
   useEffect(() => {
@@ -132,5 +79,5 @@ export function useDocumentPiP() {
     };
   }, []);
 
-  return { isPiP, isSupported, togglePiP, exitPiP };
+  return { isSupported, isWindowOpen, openPiP, closePiP };
 }

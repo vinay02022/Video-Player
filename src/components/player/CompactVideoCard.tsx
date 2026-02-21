@@ -27,7 +27,7 @@ export const CompactVideoCard = memo(function CompactVideoCard({
         isActive ? 'bg-white/10' : 'hover:bg-white/5 active:bg-white/10'
       }`}
     >
-      <div className="relative w-28 flex-shrink-0 aspect-[3/4] rounded-md overflow-hidden bg-surface-tertiary">
+      <div className="relative w-24 flex-shrink-0 aspect-square rounded-md overflow-hidden bg-surface-tertiary">
         <img
           src={video.thumbnailUrl}
           alt={video.title}

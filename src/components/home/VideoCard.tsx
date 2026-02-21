@@ -30,7 +30,7 @@ export const VideoCard = memo(function VideoCard({
       onClick={handleClick}
       className="group w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-red rounded-xl"
     >
-      <div className="relative aspect-[3/4] bg-surface-tertiary rounded-xl overflow-hidden">
+      <div className="relative aspect-square bg-surface-tertiary rounded-xl overflow-hidden">
         <img
           src={video.thumbnailUrl}
           alt={video.title}
