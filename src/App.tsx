@@ -1,10 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
+import { HomePage } from '@/components/home/HomePage';
 
-function Placeholder({ label }: { label: string }) {
+function PlayerPagePlaceholder() {
   return (
     <div className="flex items-center justify-center h-dvh text-gray-400">
-      {label}
+      Player Page (coming next)
     </div>
   );
 }
@@ -14,8 +15,8 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route element={<AppShell />}>
-          <Route index element={<Placeholder label="Home Page" />} />
-          <Route path="watch/:slug" element={<Placeholder label="Player Page" />} />
+          <Route index element={<HomePage />} />
+          <Route path="watch/:slug" element={<PlayerPagePlaceholder />} />
         </Route>
       </Routes>
     </BrowserRouter>
