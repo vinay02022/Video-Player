@@ -11,6 +11,7 @@ import { usePlayerStore } from '@/store/usePlayerStore';
 import { VideoPlayer } from './VideoPlayer';
 import { PlayerControls } from './PlayerControls';
 import { InPlayerVideoList } from './InPlayerVideoList';
+import { AutoPlayCountdown } from './AutoPlayCountdown';
 import { DRAG_THRESHOLD, DRAG_VELOCITY_THRESHOLD } from '@/lib/constants';
 
 export function PlayerShell() {
@@ -103,6 +104,9 @@ export function PlayerShell() {
             <PlayerControls onMinimize={handleMinimize} />
           )}
         </AnimatePresence>
+
+        {/* Auto-play countdown overlay */}
+        <AutoPlayCountdown />
       </div>
 
       {/* Content area below video */}
