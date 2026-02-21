@@ -6,7 +6,11 @@ import { SkipButton } from './SkipButton';
 import { formatTime } from '@/lib/formatTime';
 import { CONTROLS_HIDE_DELAY } from '@/lib/constants';
 
-export function PlayerControls() {
+interface PlayerControlsProps {
+  onMinimize?: () => void;
+}
+
+export function PlayerControls({ onMinimize }: PlayerControlsProps) {
   const isPlaying = usePlayerStore((s) => s.isPlaying);
   const played = usePlayerStore((s) => s.played);
   const loaded = usePlayerStore((s) => s.loaded);
@@ -61,8 +65,20 @@ export function PlayerControls() {
       className="absolute inset-0 z-20 flex flex-col justify-between bg-gradient-to-b from-black/40 via-transparent to-black/60"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Top bar - spacer */}
-      <div className="h-12" />
+      {/* Top bar with minimize button */}
+      <div className="flex items-center px-3 pt-2">
+        {onMinimize && (
+          <button
+            onClick={onMinimize}
+            className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-white/10 transition-colors"
+            aria-label="Minimize player"
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-white fill-current">
+              <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {/* Center controls */}
       <div className="flex items-center justify-center gap-8">
