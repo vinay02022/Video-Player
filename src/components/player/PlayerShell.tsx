@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '@/store/usePlayerStore';
 import { VideoPlayer } from './VideoPlayer';
 import { PlayerControls } from './PlayerControls';
+import { InPlayerVideoList } from './InPlayerVideoList';
 
 export function PlayerShell() {
   const playerMode = usePlayerStore((s) => s.playerMode);
@@ -42,8 +43,8 @@ export function PlayerShell() {
 
         {/* Buffering indicator */}
         {isBuffering && (
-          <div className="absolute inset-0 z-15 flex items-center justify-center pointer-events-none">
-            <div className="w-10 h-10 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+          <div className="absolute inset-0 z-[15] flex items-center justify-center pointer-events-none">
+            <div className="w-10 h-10 border-[3px] border-white/30 border-t-white rounded-full animate-spin" />
           </div>
         )}
 
@@ -53,11 +54,17 @@ export function PlayerShell() {
         </AnimatePresence>
       </div>
 
-      {/* Video info area below */}
-      <div className="flex-1 overflow-y-auto bg-surface-primary px-4 py-4">
-        <h2 className="text-base font-semibold text-white leading-snug">
-          {currentVideo.title}
-        </h2>
+      {/* Content area below video */}
+      <div className="relative flex-1 overflow-hidden bg-surface-primary">
+        {/* Video info */}
+        <div className="px-4 py-4">
+          <h2 className="text-base font-semibold text-white leading-snug">
+            {currentVideo.title}
+          </h2>
+        </div>
+
+        {/* In-player video list (bottom sheet) */}
+        <InPlayerVideoList />
       </div>
     </div>
   );
