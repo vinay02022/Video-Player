@@ -26,8 +26,8 @@ export function useDocumentPiP() {
 
       try {
         const pipWindow = await window.documentPictureInPicture.requestWindow({
-          width: 640,
-          height: 360,
+          width: 800,
+          height: 450,
         });
 
         pipWindowRef.current = pipWindow;

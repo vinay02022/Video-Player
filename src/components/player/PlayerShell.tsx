@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useEffect } from 'react';
 import {
   motion,
   AnimatePresence,
@@ -6,7 +6,7 @@ import {
   useTransform,
   type PanInfo,
 } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { usePlayerStore } from '@/store/usePlayerStore';
 import { useDocumentPiP } from '@/hooks/useDocumentPiP';
 import { VideoPlayer } from './VideoPlayer';
@@ -17,6 +17,7 @@ import { DRAG_THRESHOLD, DRAG_VELOCITY_THRESHOLD } from '@/lib/constants';
 
 export function PlayerShell() {
   const navigate = useNavigate();
+  const location = useLocation();
   const isHoveringRef = useRef(false);
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -40,6 +41,13 @@ export function PlayerShell() {
   const isFull = playerMode === 'full';
   const isMini = playerMode === 'mini';
   const isPip = playerMode === 'pip';
+
+  // Auto-minimize when browser back navigates to home while player is full
+  useEffect(() => {
+    if (location.pathname === '/' && playerMode === 'full') {
+      minimizePlayer();
+    }
+  }, [location.pathname, playerMode, minimizePlayer]);
 
   // Drag-to-minimize motion values
   const dragY = useMotionValue(0);
@@ -138,7 +146,7 @@ export function PlayerShell() {
   const outerClass = isFull
     ? 'fixed inset-0 z-40 bg-black flex flex-col overflow-hidden'
     : isPip
-      ? 'fixed bottom-24 right-4 z-50 w-[480px] max-w-[90vw] rounded-xl overflow-hidden shadow-2xl shadow-black/60 border border-white/10'
+      ? 'fixed bottom-6 right-6 z-50 w-[560px] max-w-[92vw] rounded-2xl overflow-hidden shadow-2xl shadow-black/60 border border-white/15'
       : 'fixed bottom-0 left-0 right-0 z-50 bg-surface-secondary border-t border-white/10 safe-area-bottom';
 
   return (
@@ -230,12 +238,13 @@ export function PlayerShell() {
           {isFull && (
             <button
               onClick={(e) => { e.stopPropagation(); handleEnterPiP(); }}
-              className="absolute top-3 right-3 z-[25] flex items-center justify-center w-14 h-14 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+              className="absolute top-3 right-3 z-[25] flex items-center gap-2 px-4 py-2.5 rounded-lg bg-black/70 hover:bg-black/90 transition-colors border border-white/20"
               aria-label="Picture-in-Picture"
             >
-              <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current">
+              <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current">
                 <path d="M19 7h-8v6h8V7zm2-4H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14z" />
               </svg>
+              <span className="text-white text-sm font-bold">PiP</span>
             </button>
           )}
 
@@ -289,6 +298,20 @@ export function PlayerShell() {
           {/* Mini mode: transparent overlay to capture taps */}
           {isMini && <div className="absolute inset-0 z-10" />}
         </div>
+
+        {/* PiP mode: title bar below video */}
+        {isPip && (
+          <div className="flex items-center gap-3 px-4 py-3 bg-surface-secondary">
+            <img
+              src={currentVideo.thumbnailUrl}
+              alt=""
+              className="w-12 h-12 rounded-md object-cover object-top flex-shrink-0"
+            />
+            <p className="flex-1 text-sm text-white font-semibold truncate">
+              {currentVideo.title}
+            </p>
+          </div>
+        )}
 
         {/* Mini mode: title + controls */}
         {isMini && (
