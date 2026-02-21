@@ -17,7 +17,7 @@ import { DRAG_THRESHOLD, DRAG_VELOCITY_THRESHOLD } from '@/lib/constants';
 
 export function PlayerShell() {
   const navigate = useNavigate();
-  const videoContainerRef = useRef<HTMLDivElement>(null);
+  const pipContainerRef = useRef<HTMLDivElement>(null);
 
   const playerMode = usePlayerStore((s) => s.playerMode);
   const currentVideo = usePlayerStore((s) => s.currentVideo);
@@ -92,8 +92,8 @@ export function PlayerShell() {
   );
 
   const handlePiPToggle = useCallback(() => {
-    if (videoContainerRef.current) {
-      togglePiP(videoContainerRef.current);
+    if (pipContainerRef.current) {
+      togglePiP(pipContainerRef.current);
     }
   }, [togglePiP]);
 
@@ -149,14 +149,16 @@ export function PlayerShell() {
       >
         {/* Video container — always at this exact tree position to prevent unmount */}
         <div
-          ref={videoContainerRef}
           className={
             isFull
               ? 'relative w-full aspect-video bg-black flex-shrink-0'
               : 'w-[108px] h-[60px] flex-shrink-0 rounded-md overflow-hidden bg-surface-tertiary relative'
           }
         >
-          <VideoPlayer />
+          {/* Inner wrapper — only this element gets moved to PiP window */}
+          <div ref={pipContainerRef} className="w-full h-full">
+            <VideoPlayer />
+          </div>
 
           {/* Full mode: tap overlay */}
           {isFull && !isPiP && (

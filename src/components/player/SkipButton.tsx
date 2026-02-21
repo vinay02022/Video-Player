@@ -25,7 +25,7 @@ export function SkipButton({ direction }: SkipButtonProps) {
   return (
     <button
       onClick={handleClick}
-      className="relative flex items-center justify-center w-12 h-12 rounded-full hover:bg-white/10 transition-colors"
+      className="relative flex items-center justify-center w-16 h-16 rounded-full hover:bg-white/10 transition-colors"
       aria-label={isForward ? 'Skip forward 10 seconds' : 'Skip backward 10 seconds'}
     >
       {/* Ripple animation */}
@@ -58,7 +58,7 @@ export function SkipButton({ direction }: SkipButtonProps) {
       </AnimatePresence>
 
       {/* Icon */}
-      <svg viewBox="0 0 24 24" className="w-7 h-7 text-white fill-current">
+      <svg viewBox="0 0 24 24" className="w-9 h-9 text-white fill-current">
         {isForward ? (
           <>
             <path d="M18 13c0 3.31-2.69 6-6 6s-6-2.69-6-6 2.69-6 6-6v4l5-5-5-5v4c-4.42 0-8 3.58-8 8s3.58 8 8 8 8-3.58 8-8h-2z" />

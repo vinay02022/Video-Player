@@ -98,15 +98,15 @@ export function PlayerControls({ onMinimize, onPiPToggle, isPiP }: PlayerControl
       </div>
 
       {/* Center controls */}
-      <div className="flex items-center justify-center gap-8">
+      <div className="flex items-center justify-center gap-12">
         <SkipButton direction="backward" />
 
         <button
           onClick={togglePlay}
-          className="flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
+          className="flex items-center justify-center w-20 h-20 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors"
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
-          <svg viewBox="0 0 24 24" className="w-8 h-8 text-white fill-current">
+          <svg viewBox="0 0 24 24" className="w-10 h-10 text-white fill-current">
             {isPlaying ? (
               <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
             ) : (

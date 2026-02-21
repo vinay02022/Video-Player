@@ -56,24 +56,27 @@ export function useDocumentPiP() {
           }
         }
 
-        // Add PiP-specific styles
+        // Add PiP-specific styles that force the video to fill the window
         const pipStyle = pipWindow.document.createElement('style');
         pipStyle.textContent = `
+          * { margin: 0; padding: 0; box-sizing: border-box; }
           body {
-            margin: 0;
-            padding: 0;
             background: #000;
             overflow: hidden;
+            width: 100vw;
+            height: 100vh;
           }
           .pip-container {
             width: 100vw;
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background: #000;
           }
           .pip-container > * {
+            width: 100% !important;
+            height: 100% !important;
+          }
+          .pip-container div,
+          .pip-container iframe {
             width: 100% !important;
             height: 100% !important;
           }
